@@ -20,6 +20,10 @@ const projectSchema = Joi.object({
 
 // Routes
 router.get('/', getAllProjects);
+router.get('/test',  (req, res) => {
+  res.json({ message: 'Hello, world!' });
+});
+
 
 router.post('/', async (req, res, next) => {
   const { error } = projectSchema.validate(req.body);
