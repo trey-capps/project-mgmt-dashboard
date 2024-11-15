@@ -1,0 +1,96 @@
+{
+    "info": {
+      "name": "Project Management API",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Get All Projects",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "http://localhost:3000/api/projects",
+            "protocol": "http",
+            "host": ["localhost"],
+            "port": "3000",
+            "path": ["api", "projects"]
+          }
+        }
+      },
+      {
+        "name": "Create a New Project",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"name\": \"Project A\",\n  \"description\": \"This is a sample project\",\n  \"start_date\": \"2024-11-16\",\n  \"end_date\": \"2024-12-01\",\n  \"budget\": 10000\n}"
+          },
+          "url": {
+            "raw": "http://localhost:3000/api/projects",
+            "protocol": "http",
+            "host": ["localhost"],
+            "port": "3000",
+            "path": ["api", "projects"]
+          }
+        }
+      },
+      {
+        "name": "Get a Specific Project",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "http://localhost:3000/api/projects/1",
+            "protocol": "http",
+            "host": ["localhost"],
+            "port": "3000",
+            "path": ["api", "projects", "1"]
+          }
+        }
+      },
+      {
+        "name": "Update a Project",
+        "request": {
+          "method": "PUT",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"name\": \"Updated Project A\",\n  \"description\": \"This project has been updated\",\n  \"start_date\": \"2024-11-18\",\n  \"end_date\": \"2024-12-10\",\n  \"budget\": 12000\n}"
+          },
+          "url": {
+            "raw": "http://localhost:3000/api/projects/1",
+            "protocol": "http",
+            "host": ["localhost"],
+            "port": "3000",
+            "path": ["api", "projects", "1"]
+          }
+        }
+      },
+      {
+        "name": "Delete a Project",
+        "request": {
+          "method": "DELETE",
+          "header": [],
+          "url": {
+            "raw": "http://localhost:3000/api/projects/1",
+            "protocol": "http",
+            "host": ["localhost"],
+            "port": "3000",
+            "path": ["api", "projects", "1"]
+          }
+        }
+      }
+    ]
+  }
