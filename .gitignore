@@ -1,2 +1,12 @@
 node_modules/
 backend/.env
+infrastructure/terraform/terraform-sa-creds.json
+infrastructure/terraform/.terraform
+infrastructure/terraform/*.terraform.
+infrastructure/terraform/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+.terraform/
+*.tfvars
+terraform.log

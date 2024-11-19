@@ -1,0 +1,14 @@
+name: Test Action
+
+on:
+  push:
+    branches:
+      - main  
+
+jobs:
+  say-hello:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Print Testing Action!
+      run: echo "Test"
