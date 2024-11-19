@@ -17,6 +17,10 @@ app.get('/healthcheck', (req, res) => {
     res.send({ message: 'Working!' });
 });
 
+app.get('/', (req, res) => {
+    res.send({ message: 'Test Success!' });
+});
+
 // app.use('/projects', projectRoutes);
 // app.use('/electricians', electricianRoutes);
 // app.use('/customers', customerRoutes);
