@@ -3,7 +3,7 @@ name: Deploy Infrastructure to Google Cloud
 on:
   push:
     branches:
-      - main  # Run this workflow when pushing to the main branch
+      - main 
 
 jobs:
   terraform:
@@ -31,6 +31,7 @@ jobs:
         run: terraform -chdir=infrastructure/terraform init
 
       # Step 5: Terraform Plan
+      - name: Terraform Plan
         run: terraform -chdir=infrastructure/terraform plan -out=tfplan \
              -var="gcp_project=${{ secrets.GCP_PROJECT }}" \
              -var="gcp_region=${{ secrets.GCP_REGION }}"
