@@ -3,39 +3,45 @@ name: Deploy Infrastructure to Google Cloud
 on:
   push:
     branches:
-      - main 
+      - main
 
 jobs:
   terraform:
-    name: Deploy with Terraform
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout Repository
+      # Step 1: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Authenticate with Google Cloud
+      # Step 2: Change to the Terraform directory
+      - name: Set working directory
+        working-directory: infrastructure/terraform
+
+      # Step 3: Authenticate with Google Cloud
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-      # Step 3: Set up Terraform
+      # Step 4: Set up Terraform
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_wrapper: false
 
-      # Step 4: Initialize Terraform
+      # Step 5: Terraform Init
       - name: Terraform Init
+        working-directory: infrastructure/terraform
         run: terraform init
 
-      # Step 5: Terraform Plan
+      # Step 6: Terraform Plan
       - name: Terraform Plan
+        working-directory: infrastructure/terraform
         run: terraform plan -out=tfplan -var="gcp_project=${{ secrets.GCP_PROJECT }}" -var="gcp_region=${{ secrets.GCP_REGION }}"
 
-      # Step 6: Terraform Apply
+      # Step 7: Terraform Apply
       - name: Terraform Apply
-        if: success() 
+        working-directory: infrastructure/terraform
+        if: success()
         run: terraform apply -auto-approve tfplan
