@@ -1,3 +1,10 @@
+terraform {
+  backend "gcs" {
+    bucket  = "pgmt-mgmt-terraform-state-bucket"
+    prefix  = "terraform/state"
+  }
+}
+
 resource "google_project_service" "cloud_resource_manager_api" {
   project = var.gcp_project
   service = "cloudresourcemanager.googleapis.com"
