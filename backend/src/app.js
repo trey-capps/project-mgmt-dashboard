@@ -1,15 +1,24 @@
 const express = require('express');
-const projectRoutes = require('./routes/projects');
-const cors = require('cors')
+const cors = require('cors');
 
+// const projectRoutes = require('./routes/projectRoutes');
+// const electricianRoutes = require('./routes/electricianRoutes');
+// const customerRoutes = require('./routes/customerRoutes');
 
 const app = express();
+
 app.use(cors());
 
 // Middleware
 app.use(express.json());
 
 // Routes
-app.use('/api/projects', projectRoutes);
+app.get('/healthcheck', (req, res) => {
+    res.send({ message: 'Working!' });
+});
+
+// app.use('/projects', projectRoutes);
+// app.use('/electricians', electricianRoutes);
+// app.use('/customers', customerRoutes);
 
 module.exports = app;

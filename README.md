@@ -27,3 +27,11 @@ follow guide [here](./infrastructure/startup.md)
 use postman or curl to test the endpoints
 
 If using postman use the collection [here](./backend/tests/postman/project-management-api.postman_collection.json)
+
+
+# Deployment
+tag docker image
+```docker tag [IMAGE] gcr.io/[PROJECT-ID]/[IMAGE]```
+Once: ```gcloud auth configure-docker```
+
+```docker push gcr.io/[PROJECT-ID]/[IMAGE]```
