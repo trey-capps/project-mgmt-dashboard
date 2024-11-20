@@ -30,16 +30,16 @@ jobs:
         name: Authenticate to Google Cloud (Planner)
         uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: 'projects/32549352397/locations/global/workloadIdentityPools/github/providers/github'
-          service_account: 'tf-plan@blue-project-378421.iam.gserviceaccount.com'
+          workload_identity_provider: 'projects/236070657798/locations/global/workloadIdentityPools/github/providers/github'
+          service_account: 'tf-plan@project-management-dev-442120.iam.gserviceaccount.com'
 
       - id: applierAuth
         if: github.ref == 'refs/heads/main'
         name: Authenticate to Google Cloud (Applier)
         uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: 'projects/32549352397/locations/global/workloadIdentityPools/github/providers/github'
-          service_account: 'tf-apply@blue-project-378421.iam.gserviceaccount.com'
+          workload_identity_provider: 'projects/236070657798/locations/global/workloadIdentityPools/github/providers/github'
+          service_account: 'tf-apply@project-management-dev-442120.iam.gserviceaccount.com'
 
       # Step 3: Setup Terraform
       - uses: hashicorp/setup-terraform@v2
