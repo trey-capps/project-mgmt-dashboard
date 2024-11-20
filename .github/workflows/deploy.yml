@@ -35,7 +35,7 @@ jobs:
       # Step 5: Terraform Plan
       - name: Terraform Plan
         working-directory: infrastructure/terraform
-        run: terraform plan -out=tfplan \
+        run: terraform -chdir=./infrastructure/terraform plan -out=tfplan \
              -var="gcp_project=${{ secrets.GCP_PROJECT }}" \
              -var="gcp_region=${{ secrets.GCP_REGION }}"
 
