@@ -13,6 +13,13 @@ jobs:
 
     steps:
       # Step 1: Retrieve the OIDC Token
+
+      - name: Fetch and Display OIDC Token
+        run: |
+          OIDC_JWT=$(curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
+          echo "Raw OIDC Token: $OIDC_JWT"
+          echo $OIDC_JWT | awk -F '.' '{print "Header: "$1"\nPayload: "$2"\nSignature: "$3}'
+
       - name: Request OIDC Token
         run: |
           echo "Requesting OIDC token..."
