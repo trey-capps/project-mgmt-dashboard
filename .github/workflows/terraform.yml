@@ -44,7 +44,7 @@ jobs:
       # Step 3: Setup Terraform
       - uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.4.0
+          terraform_version: 1.5.7
 
       # Step 4: Terraform fmt
       - id: fmt
