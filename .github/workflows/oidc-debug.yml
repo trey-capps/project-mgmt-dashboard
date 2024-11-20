@@ -1,36 +1,23 @@
 name: Debug OIDC Token
 
 on:
-  workflow_dispatch: # Allows manual triggering of this workflow
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   debug-oidc:
     runs-on: ubuntu-latest
 
-    permissions: # Enable OIDC token access
+    permissions:
       id-token: write
       contents: read
 
     steps:
-      # Step 1: Check Out Repository
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Step 2: Request OIDC Token
       - name: Request OIDC Token
-        id: oidc-token
         run: |
           echo "Requesting OIDC token..."
-          curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" > oidc-token.json
+          curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.' > oidc-token.json
 
-          echo "Raw OIDC token stored in oidc-token.json"
-
-      # Step 3: Decode OIDC Token
-      - name: Decode and Log OIDC Token
+      - name: Decode OIDC Token
         run: |
-          echo "Decoding OIDC token..."
-          cat oidc-token.json | jq '.'
-
-      # Step 4: Debug Environment Variables
-      - name: Debug Environment Variables
-        run: printenv
+          echo "Decoding OIDC token payload..."
+          cat oidc-token.json | jq -r '.id_token' | cut -d "." -f2 | base64 -d | jq '.'

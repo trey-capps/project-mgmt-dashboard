@@ -1,85 +1,86 @@
 #!/bin/bash
 
-# Load variables from .env file
+# Load configuration from config.env
 if [[ -f .env ]]; then
   source .env
 else
-  echo ".env file not found. Please create one with the required variables."
+  echo "Error: config.env file not found. Please create one with the required variables."
   exit 1
 fi
 
-# Validate required variables
-REQUIRED_VARS=("PROJECT_ID" "GITHUB_REPO_OWNER" "GITHUB_REPO_NAME" "POOL_NAME" "PLANNER_SA" "APPLIER_SA")
+# Check required variables
+REQUIRED_VARS=("PROJECT_ID" "PROJECT_NUMBER" "STATE_BUCKET" "POOL_NAME")
 for var in "${REQUIRED_VARS[@]}"; do
   if [[ -z "${!var}" ]]; then
-    echo "Error: $var is not set in the .env file."
+    echo "Error: $var is not set in config.env"
     exit 1
   fi
 done
 
-# Enable required APIs
-echo "Enabling required APIs..."
-gcloud services enable iam.googleapis.com cloudresourcemanager.googleapis.com
+# Step 1: Create a GCS bucket for Terraform state in US East
+echo "Creating GCS bucket for Terraform state in $REGION..."
+gcloud storage buckets create gs://$STATE_BUCKET \
+  --project=$PROJECT_ID \
+  --default-storage-class=STANDARD \
+  --location=$REGION \
+  --uniform-bucket-level-access
 
-# Create Planner Service Account
-echo "Creating Planner Service Account ($PLANNER_SA)..."
-gcloud iam service-accounts create "$PLANNER_SA" \
-  --description="Service account for Terraform plan" \
-  --display-name="Terraform Planner"
-
-# Create Applier Service Account
-echo "Creating Applier Service Account ($APPLIER_SA)..."
-gcloud iam service-accounts create "$APPLIER_SA" \
-  --description="Service account for Terraform apply" \
-  --display-name="Terraform Applier"
-
-# Grant roles to Planner Service Account
-echo "Granting roles to Planner Service Account..."
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:${PLANNER_SA}@${PROJECT_ID}.iam.gserviceaccount.com" \
-  --role="roles/viewer"
-
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:${PLANNER_SA}@${PROJECT_ID}.iam.gserviceaccount.com" \
-  --role="roles/storage.objectViewer"
-
-# Grant roles to Applier Service Account
-echo "Granting roles to Applier Service Account..."
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:${APPLIER_SA}@${PROJECT_ID}.iam.gserviceaccount.com" \
-  --role="roles/editor"
-
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:${APPLIER_SA}@${PROJECT_ID}.iam.gserviceaccount.com" \
-  --role="roles/storage.objectAdmin"
-
-# Create Workload Identity Pool
+# Step 2: Create Workload Identity Pool
 echo "Creating Workload Identity Pool ($POOL_NAME)..."
 gcloud iam workload-identity-pools create "$POOL_NAME" \
-  --project="$PROJECT_ID" \
+  --project=$PROJECT_ID \
   --location="global" \
-  --display-name="Terraform Workload Identity Pool"
+  --description="GitHub Workload Identity Pool" \
+  --display-name="GitHub Pool"
 
-# Create OIDC Provider for GitHub Actions
-echo "Creating OIDC Provider for GitHub Actions..."
-gcloud iam workload-identity-pools providers create-oidc github-provider \
-  --project="$PROJECT_ID" \
+# Step 3: Create OIDC Provider
+echo "Creating OIDC Provider..."
+gcloud iam workload-identity-pools providers create-oidc "github" \
+  --project=$PROJECT_ID \
   --location="global" \
   --workload-identity-pool="$POOL_NAME" \
   --display-name="GitHub Provider" \
-  --attribute-mapping="google.subject=assertion.sub,attribute.workflow_ref=assertion.job_workflow_ref,attribute.event_name=assertion.event_name" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.event_name=assertion.event_name" \
   --issuer-uri="https://token.actions.githubusercontent.com"
 
-# Bind Planner Service Account to Workload Identity
-echo "Binding Planner Service Account to Workload Identity..."
-gcloud iam service-accounts add-iam-policy-binding "${PLANNER_SA}@${PROJECT_ID}.iam.gserviceaccount.com" \
-  --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/projects/${PROJECT_ID}/locations/global/workloadIdentityPools/${POOL_NAME}/attribute.repository/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}"
+# Step 4: Create Terraform Planner and Applier service accounts
+echo "Creating Terraform Planner and Applier service accounts..."
+gcloud iam service-accounts create tf-plan \
+  --project=$PROJECT_ID \
+  --description="SA for Terraform Plan" \
+  --display-name="Terraform Planner"
 
-# Bind Applier Service Account to Workload Identity
-echo "Binding Applier Service Account to Workload Identity..."
-gcloud iam service-accounts add-iam-policy-binding "${APPLIER_SA}@${PROJECT_ID}.iam.gserviceaccount.com" \
+gcloud iam service-accounts create tf-apply \
+  --project=$PROJECT_ID \
+  --description="SA for Terraform Apply" \
+  --display-name="Terraform Applier"
+
+# Step 5: Grant bucket permissions
+echo "Granting permissions to GCS bucket..."
+gcloud storage buckets add-iam-policy-binding gs://$STATE_BUCKET \
+  --member="serviceAccount:tf-plan@$PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/storage.objectAdmin"
+
+gcloud storage buckets add-iam-policy-binding gs://$STATE_BUCKET \
+  --member="serviceAccount:tf-apply@$PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/storage.objectAdmin"
+
+# Step 6: Grant project-level permissions
+echo "Granting project-level permissions to service accounts..."
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:tf-apply@$PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/editor"
+
+# Step 7: Bind service accounts to Workload Identity Pool
+echo "Binding service accounts to Workload Identity Pool..."
+gcloud iam service-accounts add-iam-policy-binding "tf-plan@$PROJECT_ID.iam.gserviceaccount.com" \
+  --project=$PROJECT_ID \
   --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/projects/${PROJECT_ID}/locations/global/workloadIdentityPools/${POOL_NAME}/attribute.repository/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}"
+  --member="principalSet://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$POOL_NAME/attribute.event_name/pull_request"
+
+gcloud iam service-accounts add-iam-policy-binding "tf-apply@$PROJECT_ID.iam.gserviceaccount.com" \
+  --project=$PROJECT_ID \
+  --role="roles/iam.workloadIdentityUser" \
+  --member="principalSet://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$POOL_NAME/attribute.repository/$GITHUB_REPO_OWNER/$GITHUB_REPO_NAME"
 
 echo "Setup completed successfully!"
