@@ -1,0 +1,7 @@
+jobs:
+  debug-oidc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decode OIDC Token
+        run: |
+          curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq .
