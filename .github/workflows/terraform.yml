@@ -55,7 +55,7 @@ jobs:
       # Step 5: Terraform Init
       - id: init
         name: Terraform Init
-        run: terraform init -input=false -backend-config="prefix=terraform/state" -backend-config="bucket=pgmt-mgmt-dash-terraform-state"
+        run: terraform init -input=false
         working-directory: infrastructure/terraform
 
       # Step 6: Terraform Validate

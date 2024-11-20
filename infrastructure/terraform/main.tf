@@ -1,21 +1,21 @@
 terraform {
   backend "gcs" {
-    bucket  = "pgmt-mgmt-dash-terraform-state"
-    prefix  = "terraform/state"
+    bucket = "pgmt-mgmt-dash-terraform-state"
+    prefix = "terraform/state"
   }
 }
 
 resource "google_project_service" "cloud_resource_manager_api" {
-  project = var.gcp_project
-  service = "cloudresourcemanager.googleapis.com"
+  project            = var.gcp_project
+  service            = "cloudresourcemanager.googleapis.com"
   disable_on_destroy = false
 }
 
 resource "google_project_service" "cloud_run_api" {
-  project = var.gcp_project
-  service = "run.googleapis.com"
+  project            = var.gcp_project
+  service            = "run.googleapis.com"
   disable_on_destroy = false
-  depends_on = [google_project_service.cloud_resource_manager_api]
+  depends_on         = [google_project_service.cloud_resource_manager_api]
 }
 
 resource "google_cloud_run_service" "node_service" {
