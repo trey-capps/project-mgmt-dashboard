@@ -40,7 +40,8 @@ gcloud iam workload-identity-pools providers create-oidc "github" \
   --location="global" \
   --workload-identity-pool="$POOL_NAME" \
   --display-name="GitHub Provider" \
-  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.event_name=assertion.event_name" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.workflow_ref=assertion.job_workflow_ref,attribute.event_name=assertion.event_name" \
+  --attribute-condition="assertion.repository_owner == '$GITHUB_REPO_OWNER'" \
   --issuer-uri="https://token.actions.githubusercontent.com"
 
 # Step 4: Create Terraform Planner and Applier service accounts

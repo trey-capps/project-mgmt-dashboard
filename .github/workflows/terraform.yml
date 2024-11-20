@@ -1,0 +1,113 @@
+name: Terraform Workflow Demo
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform.yaml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform.yaml'
+
+jobs:
+  terraform:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+      pull-requests: 'write' # Needed to comment on the PR
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - uses: actions/checkout@v3
+
+      # Step 2: Authenticate to Google Cloud for Planner or Applier
+      - id: plannerAuth
+        if: github.ref != 'refs/heads/main'
+        name: Authenticate to Google Cloud (Planner)
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: 'projects/32549352397/locations/global/workloadIdentityPools/github/providers/github'
+          service_account: 'tf-plan@blue-project-378421.iam.gserviceaccount.com'
+
+      - id: applierAuth
+        if: github.ref == 'refs/heads/main'
+        name: Authenticate to Google Cloud (Applier)
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: 'projects/32549352397/locations/global/workloadIdentityPools/github/providers/github'
+          service_account: 'tf-apply@blue-project-378421.iam.gserviceaccount.com'
+
+      # Step 3: Setup Terraform
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.0
+
+      # Step 4: Terraform fmt
+      - id: fmt
+        name: Terraform fmt
+        run: terraform fmt -check
+        working-directory: terraform
+
+      # Step 5: Terraform Init
+      - id: init
+        name: Terraform Init
+        run: terraform init -input=false -backend-config="prefix=terraform-demo" -backend-config="bucket=tf-state-storage-2023"
+        working-directory: terraform
+
+      # Step 6: Terraform Validate
+      - id: validate
+        name: Terraform Validate
+        run: terraform validate -no-color
+        working-directory: terraform
+
+      # Step 7: Terraform Plan
+      - id: plan
+        name: Terraform Plan
+        run: terraform plan -no-color
+        working-directory: terraform
+        continue-on-error: true
+
+      # Step 8: Comment on Pull Request with Plan Details
+      - uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const output = `#### Terraform Format and Style 🖌: \`${{ steps.fmt.outcome }}\`
+#### Terraform Initialization ⚙️: \`${{ steps.init.outcome }}\`
+#### Terraform Validation 🤖: \`${{ steps.validate.outcome }}\`
+#### Terraform Plan 📖: \`${{ steps.plan.outcome }}\`
+
+<details><summary>Show Plan</summary>
+
+\`\`\`\n
+${process.env.PLAN}
+\`\`\`
+
+</details>
+
+*Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          });
+
+      # Step 9: Plan Status Check
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      # Step 10: Terraform Apply
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false
+        working-directory: terraform
