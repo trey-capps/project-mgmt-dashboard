@@ -7,6 +7,10 @@ jobs:
   debug-oidc:
     runs-on: ubuntu-latest
 
+    permissions: # Enable OIDC token access
+      id-token: write
+      contents: read
+
     steps:
       # Step 1: Check Out Repository
       - name: Checkout code
@@ -16,17 +20,14 @@ jobs:
       - name: Request OIDC Token
         id: oidc-token
         run: |
-          # Fetch the OIDC token
           echo "Requesting OIDC token..."
           curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" > oidc-token.json
 
-          # Log the raw token for inspection (ensure this is private for security)
           echo "Raw OIDC token stored in oidc-token.json"
 
       # Step 3: Decode OIDC Token
       - name: Decode and Log OIDC Token
         run: |
-          # Decode and log the token's payload using jq
           echo "Decoding OIDC token..."
           cat oidc-token.json | jq '.'
 
