@@ -15,4 +15,4 @@ infrastructure/terraform/setup/.env
 
 
 .github/workflows/initial-test.yml
-.github/workflows/terraform_ex.yml
+.github/workflows/deploy.yml
