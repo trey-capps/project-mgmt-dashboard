@@ -14,6 +14,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Debug Root Directory
+        run: ls -la
+
+      - name: Debug Infrastructure Directory
+        run: ls -la infrastructure
+
       # Step 2: Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
@@ -39,7 +45,7 @@ jobs:
       # Step 5: Terraform Plan
       - name: Terraform Plan
         working-directory: infrastructure/terraform
-        run: terraform -chdir=infrastructure/terraform plan -out=tfplan \
+        run: terraform plan -out=tfplan \
              -var="gcp_project=${{ secrets.GCP_PROJECT }}" \
              -var="gcp_region=${{ secrets.GCP_REGION }}"
 
