@@ -10,3 +10,9 @@ infrastructure/terraform/.terraform.lock.hcl
 .terraform/
 *.tfvars
 terraform.log
+
+infrastructure/terraform/setup/.env
+
+
+.github/workflows/initial-test.yml
+.github/workflows/terraform_ex.yml
