@@ -50,25 +50,25 @@ jobs:
       - id: fmt
         name: Terraform fmt
         run: terraform fmt -check
-        working-directory: terraform
+        working-directory: infrastructure/terraform
 
       # Step 5: Terraform Init
       - id: init
         name: Terraform Init
         run: terraform init -input=false -backend-config="prefix=terraform-demo" -backend-config="bucket=tf-state-storage-2023"
-        working-directory: terraform
+        working-directory: infrastructure/terraform
 
       # Step 6: Terraform Validate
       - id: validate
         name: Terraform Validate
         run: terraform validate -no-color
-        working-directory: terraform
+        working-directory: infrastructure/terraform
 
       # Step 7: Terraform Plan
       - id: plan
         name: Terraform Plan
         run: terraform plan -no-color
-        working-directory: terraform
+        working-directory: infrastructure/terraform
         continue-on-error: true
 
       # Step 8: Comment on Pull Request with Plan Details
@@ -110,4 +110,4 @@ jobs:
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve -input=false
-        working-directory: terraform
+        working-directory: infrastructure/terraform
