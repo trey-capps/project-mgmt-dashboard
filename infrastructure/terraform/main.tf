@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
-    bucket  = "pgmt-mgmt-terraform-state-bucket"
+    bucket  = "pgmt-mgmt-dash-terraform-state"
     prefix  = "terraform/state"
   }
 }
