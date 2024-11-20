@@ -25,18 +25,22 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_wrapper: false
+          terraform_version: 1.5.7
 
       # Step 4: Initialize Terraform
       - name: Terraform Init
-        run: terraform -chdir=infrastructure/terraform init
+        working-directory: infrastructure/terraform
+        run: terraform init
 
       # Step 5: Terraform Plan
       - name: Terraform Plan
-        run: terraform plan -chdir=infrastructure/terraform -out=tfplan \
+        working-directory: infrastructure/terraform
+        run: terraform plan -out=tfplan \
              -var="gcp_project=${{ secrets.GCP_PROJECT }}" \
              -var="gcp_region=${{ secrets.GCP_REGION }}"
 
       # Step 6: Terraform Apply
       - name: Terraform Apply
+        working-directory: infrastructure/terraform
         if: success()
-        run: terraform -chdir=infrastructure/terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve tfplan
