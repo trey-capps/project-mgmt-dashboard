@@ -24,10 +24,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Debug Environment Variables
-        run: |
-          echo "GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}"
-
       - name: Authenticate to Google Cloud
         id: auth
         uses: google-github-actions/auth@v1
