@@ -30,9 +30,12 @@ jobs:
         with:
           workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}
-          
+      
+      - name: Debug Docker Push URL
+        run: echo "Docker push target: gcr.io/${{ env.GCP_PROJECT_ID }}/proj-mgmt-bck-app:${{ github.sha }}"
+
       - name: Configure Docker to use GCR
-        run: gcloud auth configure-docker
+        run: gcloud auth configure-docker gcr.io
 
       - name: Build Docker Image
         run: |
@@ -47,7 +50,7 @@ jobs:
 
       - name: Update Cloud Run Service
         run: |
-          gcloud run deploy my-nodejs-app \
+          gcloud run deploy  proj-mgmt-bck-app \
             --image gcr.io/${{ env.GCP_PROJECT_ID }}/proj-mgmt-bck-app:${{ github.sha }} \
             --region us-east1 \
             --platform managed
