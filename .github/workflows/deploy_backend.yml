@@ -1,9 +1,10 @@
 name: Redeploy Backend
 
 on:
+  workflow_dispatch:
   push:
     paths:
-      - 'backend/**'  # Trigger when backend code changes
+      - 'backend/**'
 
 jobs:
   redeploy-backend:
@@ -24,9 +25,7 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
-          workload_identity_provider: projects/YOUR_PROJECT_NUMBER/locations/global/workloadIdentityPools/YOUR_POOL_ID/providers/YOUR_PROVIDER_ID
-          service_account: deploy-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com
-
+          
       - name: Configure Docker to use GCR
         run: gcloud auth configure-docker
 
