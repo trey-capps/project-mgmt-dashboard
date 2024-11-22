@@ -11,6 +11,11 @@ jobs:
     name: Rebuild and Deploy Backend
     runs-on: ubuntu-latest
 
+    env:
+      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+      GCP_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+
     permissions:
       id-token: write
       contents: read
