@@ -24,12 +24,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Debug Environment Variables
+        run: |
+          echo "GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}"
+
+      - name: Debug Secrets Injection
+        run: |
+          echo "GCP_WORKLOAD_IDENTITY_PROVIDER=${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}"
+          echo "GCP_SERVICE_ACCOUNT_EMAIL=${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}"
+          echo "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}"
+
+
       - name: Authenticate to Google Cloud
         id: auth
         uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}
           
       - name: Configure Docker to use GCR
         run: gcloud auth configure-docker
@@ -38,16 +49,16 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64 \
-            -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/proj-mgmt-bck-app:${{ github.sha }} \
+            -t gcr.io/${{ env.GCP_PROJECT_ID }}/proj-mgmt-bck-app:${{ github.sha }} \
             backend
 
       - name: Push Docker Image
         run: |
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/proj-mgmt-bck-app:${{ github.sha }}
+          docker push gcr.io/${{ env.GCP_PROJECT_ID }}/proj-mgmt-bck-app:${{ github.sha }}
 
       - name: Update Cloud Run Service
         run: |
           gcloud run deploy my-nodejs-app \
-            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/proj-mgmt-bck-app:${{ github.sha }} \
+            --image gcr.io/${{ env.GCP_PROJECT_ID }}/proj-mgmt-bck-app:${{ github.sha }} \
             --region us-east1 \
             --platform managed
