@@ -13,8 +13,8 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.get('/a', (req, res) => {
-    res.send({ message: 'A success!' });
+app.get('/b', (req, res) => {
+    res.send({ message: 'B success!' });
 });
 
 app.get('/', (req, res) => {
