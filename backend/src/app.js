@@ -13,9 +13,6 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.get('/healthcheck', (req, res) => {
-    res.send({ message: 'Working!' });
-});
 
 app.get('/', (req, res) => {
     res.send({ message: 'Test Success!' });
